@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, send_file
+from flask import Blueprint, render_template, request, send_file, redirect
 from werkzeug.utils import secure_filename
 import io
 
@@ -27,8 +27,13 @@ def home():
     if request.method == 'POST':
         print(request.files)
         save_files(request)
+        return redirect('/file_processed')
 
     return render_template('new.html')
+
+@view.route('/file_processed', methods=['GET'])
+def processed_file():
+    return render_template('form_with_download.html')
 
 
 @view.route('/download')

@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, request, send_file, redirect
+from flask import Blueprint, render_template, request, redirect, send_file
 from werkzeug.utils import secure_filename
-import io
+import os
+from zipfile import ZipFile
 
 view = Blueprint('view', __name__)
 
@@ -33,19 +34,30 @@ def home():
 
 @view.route('/file_processed', methods=['GET'])
 def processed_file():
-    return render_template('form_with_download.html')
+    global directory_path,temp_zip_path
+    directory_path = "/home/alok/Documents/AI_Project_Doc/flask_webapp/uploaded_files"
+    files = os.listdir(directory_path)
 
+    temp_zip_path = '/home/alok/Documents/AI_Project_Doc/flask_webapp/uploaded_files/downloaded_files.zip'
+    with ZipFile(temp_zip_path, 'w') as zipf:
+        for file in files:
+            file_path = os.path.join(directory_path, file)
+            zipf.write(file_path, os.path.basename(file_path))
+
+    return render_template('form_with_download.html')
 
 @view.route('/download')
 def download_file():
-    # Generate the content to be downloaded
-    content = "This is the content of the file that you can download."
-
-    # Convert the content to bytes
-    content_bytes = content.encode('utf-8')
-
-    # Create an in-memory file-like object
-    file_obj = io.BytesIO(content_bytes)
-
     # Use the send_file function to send the file for download
-    return send_file(file_obj, as_attachment=True, download_name='downloaded_file.txt')
+    return send_file(temp_zip_path, as_attachment=True)
+
+@view.route('/back_home', methods=['GET'])
+def back_to_home():
+    #While going back to home page we will delete the files from uploaded folder
+    files = os.listdir(directory_path)
+
+    for file in files:
+        file_path = os.path.join(directory_path, file)
+        os.remove(file_path)
+
+    return redirect('/home')

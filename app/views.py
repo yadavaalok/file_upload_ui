@@ -24,7 +24,6 @@ def save_files(request):
 
 @view.route('/home', methods=['GET', 'POST'])
 def home():
-    print("1111111111111111111")
     if request.method == 'POST':
         print(request.files)
         save_files(request)
